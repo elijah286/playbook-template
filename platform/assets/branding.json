@@ -1,0 +1,15 @@
+{
+  "approval": "Repository owner explicitly approved exact official NI website assets on 2026-10-07.",
+  "policy": "Reuse verbatim. No redrawing, recoloring, cropping, filters, fabricated NI iconography, or generated brand imagery. Fonts require separately verified redistribution rights.",
+  "assets": [
+    {
+      "file": "ni-logo.png",
+      "source": "https://ni.scene7.com/is/image/ni/logo_2020?fmt=png-alpha",
+      "observedOn": "https://www.ni.com/en.html",
+      "purpose": "Original logo used by the official NI website header",
+      "sha256": "e143718fec4cac4a9932d73e32d39bd6447d885df5f1aa9b080e3d09653f77cc",
+      "width": 344,
+      "height": 226
+    }
+  ]
+}

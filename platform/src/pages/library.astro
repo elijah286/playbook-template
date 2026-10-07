@@ -1,0 +1,62 @@
+---
+import { Search, SlidersHorizontal, ArrowUpRight, X, FileText } from '@lucide/astro';
+import Shell from '../layouts/Shell.astro';
+import ResourceCard from '../components/ResourceCard.astro';
+import { resources, categories, audiences, href } from '../data.mjs';
+const types = [...new Set(resources.map(resource => resource.type))].sort();
+---
+<Shell active="library" title="Resource Library">
+  <section class="page-heading"><p class="eyebrow">THE RESOURCE LIBRARY</p><h1>Find What Moves the Work Forward.</h1><p>Presentations, practical guidance, and implementation resources for the entire team.</p></section>
+  <section class="library-layout" data-index={href('search.json')}>
+    <button class="button button-outline filter-toggle" type="button" aria-expanded="false" aria-controls="resource-filters"><SlidersHorizontal size={17} />Filters</button>
+    <aside id="resource-filters" class="filter-sidebar"><h2><SlidersHorizontal size={18} />Refine Resources</h2><fieldset><legend>Audience</legend>{Object.entries(audiences).map(([key, label]) => <label><input type="checkbox" name="audience" value={key} />{label}</label>)}</fieldset><fieldset><legend>Resource Type</legend>{types.map(type => <label><input type="checkbox" name="type" value={type} />{type.replace(/-/g, ' ')}</label>)}</fieldset><fieldset><legend>Content Category</legend>{Object.entries(categories).map(([key, label]) => <label><input type="checkbox" name="category" value={key} />{label}</label>)}</fieldset><button class="text-link clear-filters" type="button"><X size={15} />Clear Filters</button></aside>
+    <div class="library-main"><form class="search-form" role="search"><Search size={21} /><label class="sr-only" for="resource-search">Search this playbook</label><input id="resource-search" type="search" name="q" placeholder="Search resources, topics, or outcomes" autocomplete="off" /><button type="submit" class="icon-button" aria-label="Search" title="Search"><ArrowUpRight size={19} /></button></form><div class="results-heading"><p id="result-count" role="status" aria-live="polite">{resources.length} resources</p><span>THIS PLAYBOOK ONLY</span></div><div id="resource-results" class="resource-grid">{resources.map(resource => <ResourceCard resource={resource} />)}</div><div id="no-results" class="empty-state" hidden><Search size={30} /><h2>No Matching Resources</h2><p>Try another search or clear the selected filters.</p><button class="button clear-filters" type="button">Clear Search and Filters<X size={17} /></button></div><p class="search-error" role="alert" hidden>Search could not load. The complete resource library remains available below.</p><noscript><p>Search needs JavaScript. All published resources are listed below.</p></noscript></div>
+  </section>
+  <script>
+    import MiniSearch from 'minisearch';
+    const surface = document.querySelector('.library-layout');
+    const results = document.getElementById('resource-results');
+    const count = document.getElementById('result-count');
+    const empty = document.getElementById('no-results');
+    const input = document.getElementById('resource-search');
+    const controls = [...document.querySelectorAll('.filter-sidebar input')];
+    const form = document.querySelector('.search-form');
+    const filterToggle = document.querySelector('.filter-toggle');
+    filterToggle.addEventListener('click', () => {
+      const open = filterToggle.getAttribute('aria-expanded') !== 'true';
+      filterToggle.setAttribute('aria-expanded', String(open));
+      document.getElementById('resource-filters').dataset.open = String(open);
+    });
+    const search = new MiniSearch({ fields: ['title', 'summary', 'body', 'terms'], storeFields: ['title', 'summary', 'type', 'audiences', 'categories', 'url'], searchOptions: { boost: { title: 4, summary: 2 }, prefix: true, fuzzy: 0.2 } });
+    let documents = [];
+    function escape(value) { const element = document.createElement('span'); element.textContent = value; return element.innerHTML; }
+    function update() {
+      const query = input.value.trim();
+      const selections = Object.fromEntries(['audience', 'type', 'category'].map(name => [name, controls.filter(control => control.name === name && control.checked).map(control => control.value)]));
+      const matches = query ? search.search(query).map(result => documents.find(document => document.id === result.id)) : documents;
+      const filtered = matches.filter(resource => (!selections.audience.length || selections.audience.some(audience => resource.audiences.includes(audience))) && (!selections.type.length || selections.type.includes(resource.type)) && (!selections.category.length || selections.category.some(category => resource.categories.includes(category))));
+      results.innerHTML = filtered.map(resource => `<article class="resource-card"><div class="resource-top"><span class="resource-dot"></span><span class="type-label">${escape(resource.type.replace(/-/g, ' '))}</span></div><h3><a href="${escape(resource.url)}">${escape(resource.title)}<span aria-hidden="true">&#8599;</span></a></h3><p>${escape(resource.summary || 'Open the original resource and its metadata.')}</p><div class="resource-audience">${resource.audiences.slice(0,2).map(audience => `<span>${escape(audience.replace(/-/g, ' '))}</span>`).join('')}</div></article>`).join('');
+      count.textContent = `${filtered.length} ${filtered.length === 1 ? 'resource' : 'resources'}${query ? ` for "${query}"` : ''}`;
+      empty.hidden = filtered.length !== 0;
+      const parameters = new URLSearchParams();
+      if (query) parameters.set('q', query);
+      for (const [name, values] of Object.entries(selections)) for (const value of values) parameters.append(name, value);
+      history.replaceState(null, '', location.pathname + (parameters.size ? `?${parameters}` : ''));
+    }
+    try {
+      const response = await fetch(surface.dataset.index);
+      if (!response.ok) throw new Error('Index unavailable');
+      documents = await response.json();
+      search.addAll(documents);
+      const parameters = new URLSearchParams(location.search);
+      input.value = parameters.get('q') ?? '';
+      for (const control of controls) control.checked = parameters.getAll(control.name).includes(control.value);
+      update();
+      surface.dataset.ready = 'true';
+      input.addEventListener('input', update);
+      controls.forEach(control => control.addEventListener('change', update));
+      form.addEventListener('submit', event => { event.preventDefault(); update(); });
+      document.querySelectorAll('.clear-filters').forEach(button => button.addEventListener('click', () => { input.value = ''; controls.forEach(control => { control.checked = false; }); update(); input.focus(); }));
+    } catch { document.querySelector('.search-error').hidden = false; }
+  </script>
+</Shell>

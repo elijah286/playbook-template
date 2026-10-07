@@ -1,0 +1,36 @@
+---
+import { Search, ArrowUpRight, Menu, X, Plus, Upload, Users, MessageSquare } from '@lucide/astro';
+import { config, href, repositoryUrl } from '../data.mjs';
+import '../styles.css';
+const { title = config.name, active = '' } = Astro.props;
+const nav = [{ label: 'Overview', path: '', key: 'overview' }, { label: 'Resource Library', path: 'library/', key: 'library' }, { label: 'Audience Paths', path: 'paths/', key: 'paths' }, { label: 'Community', path: 'community/', key: 'community' }];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={config.description} />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title === config.name ? title : `${title} | ${config.name}`}</title>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href={href('')} aria-label={`${config.name} overview`}><img class="brand-logo" src={href('branding/ni-logo.png')} alt="NI" width="344" height="226" /><span class="brand-text">Customer Value<br /><strong>Playbooks</strong></span></a>
+      <nav class="desktop-nav" aria-label="Primary">{nav.map(item => <a class:list={{ selected: active === item.key }} href={href(item.path)} aria-current={active === item.key ? 'page' : undefined}>{item.label}</a>)}</nav>
+      <div class="header-actions"><a class="icon-button" href={href('library/')} aria-label="Search resources" title="Search resources"><Search size={20} /></a><a class="button button-small contribute-link" href={href('contribute/')}><Plus size={16} />Contribute</a><button class="icon-button mobile-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-nav" title="Open navigation"><Menu size={22} /></button></div>
+    </header>
+    <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile primary" hidden>{nav.map(item => <a href={href(item.path)}>{item.label}</a>)}<a href={href('contribute/')}><Upload size={16} />Add Resources</a></nav>
+    <main id="main" tabindex="-1"><slot /></main>
+    <footer class="site-footer"><div><img class="brand-logo footer-logo" src={href('branding/ni-logo.png')} alt="NI" width="344" height="226" /><p>Customer Value Playbooks<br /><span>{config.maintainer}</span></p></div><div class="footer-links"><a href={href('contribute/')}><Upload size={15} />Add Resources</a>{repositoryUrl && <a href={`${repositoryUrl}/settings/access`} rel="noreferrer"><Users size={15} />Manage Access<ArrowUpRight size={13} /></a>}<a href={href('community/')}><MessageSquare size={15} />Community</a></div><p class="footer-note">{config.publication.mode === 'public-demo' ? 'Public reference demo. Source repository and Discussions require an invitation.' : 'Private playbook. Repository permissions define the shared content boundary.'}<br />Platform {config.platformVersion}</p></footer>
+    <script>
+      const toggle = document.querySelector('.mobile-toggle');
+      const navigation = document.getElementById('mobile-nav');
+      function closeNavigation() { navigation.hidden = true; toggle.setAttribute('aria-expanded', 'false'); }
+      toggle?.addEventListener('click', () => { navigation.hidden = !navigation.hidden; toggle.setAttribute('aria-expanded', String(!navigation.hidden)); });
+      document.addEventListener('keydown', event => { if (event.key === 'Escape' && !navigation.hidden) { closeNavigation(); toggle.focus(); } });
+    </script>
+  </body>
+</html>

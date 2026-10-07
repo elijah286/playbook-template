@@ -1,0 +1,14 @@
+---
+import { ArrowUpRight, Presentation, FileText, Play, Code, Link } from '@lucide/astro';
+import { resourceUrl, audiences, previewUrl } from '../data.mjs';
+const { resource } = Astro.props;
+const icons = { presentation: Presentation, demonstration: Play, 'technical-project': Code, reference: Link };
+const Icon = icons[resource.type] ?? FileText;
+---
+<article class="resource-card">
+  {resource.preview && <img class="resource-cover" src={previewUrl(resource)} alt="" width="1680" height="876" loading="lazy" />}
+  <div class="resource-top"><span class={`resource-icon type-${resource.type}`}><Icon size={22} /></span><span class="type-label">{resource.type.replace(/-/g, ' ')}</span>{resource.duration && <span class="duration">{resource.duration}</span>}</div>
+  <h3><a href={resourceUrl(resource)}>{resource.title}<ArrowUpRight size={18} /></a></h3>
+  <p>{resource.summary || 'Open the resource to inspect its original content and available metadata.'}</p>
+  <div class="resource-audience">{resource.audiences.slice(0, 2).map(audience => <span>{audiences[audience]}</span>)}{resource.audiences.length > 2 && <span>+{resource.audiences.length - 2}</span>}</div>
+</article>

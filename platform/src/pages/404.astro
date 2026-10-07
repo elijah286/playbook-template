@@ -1,0 +1,5 @@
+---
+import Shell from '../layouts/Shell.astro';
+import { href } from '../data.mjs';
+---
+<Shell title="Resource Not Found"><section class="empty-state error-page"><p class="eyebrow">404</p><h1>This Resource Is Not Available.</h1><p>It may have been removed, unpublished, or moved to a different playbook.</p><a class="button" href={href('library/')}>Return to the Library</a></section></Shell>

@@ -1,0 +1,27 @@
+name: Adopt Shared Platform
+on:
+  workflow_dispatch:
+    inputs:
+      source_revision:
+        description: Exact reviewed 40-character commit in elijah286/playbook-template
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: platform-update
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: platform-updates
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.22.0'
+      - run: node platform/update.mjs
+        env:
+          GH_TOKEN: ${{ secrets.PLATFORM_UPDATE_TOKEN }}

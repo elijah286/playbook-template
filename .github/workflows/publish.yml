@@ -1,0 +1,71 @@
+name: Publish Playbook
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      content_ref:
+        description: Content branch to validate; only main can deploy.
+        default: main
+        required: true
+permissions: {}
+concurrency:
+  group: publish-${{ github.event.inputs.content_ref || github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      deploy: ${{ steps.hosting.outputs.deploy }}
+      site: ${{ steps.hosting.outputs.site }}
+    env:
+      ASTRO_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.inputs.content_ref || github.ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.22.0'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build && node platform/verify-build.mjs
+      - run: npm audit --audit-level=high
+      - id: hosting
+        name: Verify hosting boundary
+        run: node platform/hosting.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONTENT_REF: ${{ github.event.inputs.content_ref || github.ref_name }}
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
+        if: steps.hosting.outputs.deploy == 'true'
+        with:
+          path: dist
+          retention-days: 1
+  deploy:
+    needs: build
+    if: needs.build.outputs.deploy == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Prevent an older build replacing newer content
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILT_REVISION: ${{ github.sha }}
+        run: test "$(gh api repos/${{ github.repository }}/git/ref/heads/main --jq '.object.sha')" = "$BUILT_REVISION"
+      - uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346
+        id: deployment

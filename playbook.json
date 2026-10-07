@@ -1,0 +1,12 @@
+{
+  "name": "Customer Value Playbook",
+  "description": "A clean starting point for a customer-centered technology playbook.",
+  "valueThesis": "Define the customer problem, desired outcome, supporting evidence, and conditions for success.",
+  "repository": "",
+  "maintainer": "playbook-maintainer",
+  "site": { "origin": "https://example.invalid", "base": "/" },
+  "publication": { "mode": "private", "publicDemoApproved": false },
+  "assets": { "maxLocalBytes": 25000000 },
+  "analytics": { "enabled": false },
+  "platformVersion": "0.1.0"
+}

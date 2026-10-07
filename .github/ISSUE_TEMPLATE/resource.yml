@@ -1,0 +1,40 @@
+name: Resource Request
+description: Propose structured playbook content for authorized conversion and review.
+title: "[Resource] "
+labels: [resource-request]
+body:
+  - type: markdown
+    attributes:
+      value: "Submissions are requests, not publication. A writer may apply approved-resource to convert an authorized writer's request into a draft pull request."
+  - type: input
+    id: title
+    attributes:
+      label: Resource Title
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Distribution-approved context only; do not paste confidential material into a public-demo request.
+    validations:
+      required: true
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Audience
+      options: [Sales / SBM, FAE / Technical, Customer Success, Partner, Customer]
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options: [Value Thesis, Discovery, Sales and SBM, FAE Enablement, Customer Success, Partner Enablement, Partner References, Customer Enablement]
+    validations:
+      required: true
+  - type: input
+    id: reference
+    attributes:
+      label: Reference URL
+      description: Stable HTTPS destination without credentials or signed access tokens.

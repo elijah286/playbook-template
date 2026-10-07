@@ -1,0 +1,30 @@
+name: Convert Resource Request
+on:
+  issues:
+    types: [labeled]
+permissions: {}
+concurrency:
+  group: resource-request-${{ github.event.issue.number }}
+  cancel-in-progress: false
+jobs:
+  convert:
+    if: github.event.label.name == 'approved-resource'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      actions: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.22.0'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node platform/submissions.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
