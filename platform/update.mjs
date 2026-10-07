@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { api, optional, commitFiles } from './github.mjs';
 
-const ownedRootFiles = new Set(['astro.config.mjs', 'package.json', 'package-lock.json', '.github/ISSUE_TEMPLATE/resource.yml', '.github/ISSUE_TEMPLATE/config.yml', '.github/workflows/publish.yml', '.github/workflows/convert-request.yml', '.github/workflows/create-playbook.yml', '.github/workflows/update-platform.yml']);
+const ownedRootFiles = new Set(['astro.config.mjs', 'package.json', 'package-lock.json', '.github/ISSUE_TEMPLATE/resource.yml', '.github/ISSUE_TEMPLATE/config.yml', '.github/workflows/publish.yml', '.github/workflows/convert-request.yml', '.github/workflows/create-playbook.yml', '.github/workflows/update-platform.yml', '.github/workflows/maintenance.yml']);
 export function platformOwned(file) { return ownedRootFiles.has(file) || file.startsWith('platform/') && !file.split('/').some(part => part === '..' || part === '.' || part.startsWith('.')); }
 
 export function updatePlan(upstream, previous = {}) {

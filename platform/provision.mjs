@@ -31,6 +31,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   const config = JSON.parse(Buffer.from(configFile.content, 'base64').toString('utf8'));
   if (config.provisioning && (config.provisioning.requestId !== inputs.request_id || config.provisioning.inputIdentity !== request.inputIdentity)) throw new Error('Retry inputs differ from the recorded request. Existing content was preserved.');
   api(`repos/${request.target}`, 'PATCH', { has_discussions: true });
+  for (const label of [
+    { name: 'resource-request', color: '008053', description: 'Structured playbook resource request' },
+    { name: 'approved-resource', color: '24566C', description: 'Writer-approved conversion after permission checks' },
+  ]) if (!optional(`repos/${request.target}/labels/${label.name}`)) api(`repos/${request.target}/labels`, 'POST', label);
   const pages = optional(`repos/${request.target}/pages`);
   if (pages && pages.public !== false) throw new Error('Target Pages is public. Provisioning will not weaken the private production default.');
   const site = pages ? new URL(pages.html_url) : null;

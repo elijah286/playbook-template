@@ -5,7 +5,7 @@ Status meanings: **Passed**, **Failed**, **Blocked**, and **Not Run**. This is a
 ## Recorded Local Evidence
 
 - Node 22.22.0 / npm 10.9.4; exact dependency lock; dependency audit reported zero vulnerabilities after updating to Astro 7.3.6.
-- 21 unit tests passed for discovery, upload inference, approval/state handling, metadata precedence, identifiers/relationships, paths/symlinks, bundles, URLs, 200-resource discovery, arbitrary-topic copy, original branding, provisioning allowlists, submission permissions, and update ownership.
+- 24 unit tests passed for discovery, upload inference, approval/state handling, metadata precedence, identifiers/relationships, paths/symlinks, bundles, URLs, 200-resource discovery, arbitrary-topic copy, original branding, provisioning allowlists, submission permissions, update ownership, internal-network checks, and review dates.
 - Empty clean-template build and output verification passed with zero resources.
 - Shared browser implementation was tested on the separate reference at 375, 768, 1024, 1440, and 1920 pixels. Repeat `platform/browser-check.mjs` for each instance's actual content, routes, identity model, and asset access; this template does not include the reference's screenshots or content.
 - Analytics is disabled by default. Browser evidence belongs in ignored `.generated/evidence/`, not public output.
@@ -34,7 +34,7 @@ Status meanings: **Passed**, **Failed**, **Blocked**, and **Not Run**. This is a
 | Lighthouse 95+ and lab metrics | Not Run | Representative controlled static build needs local Lighthouse run; field INP cannot be claimed from a lab score |
 | Analytics disabled | Passed by implementation | No analytics adapter or third-party scripts; repeat the zero-request browser check per instance |
 | Analytics enabled approved events | Blocked | Approved service, fields, retention, consent policy, and tested adapter not available |
-| Scheduled consolidated maintenance | Not Run | Link/staleness workflow is not installed; do not represent it as automatic |
+| Scheduled consolidated maintenance | Passed locally | Safe-IP, approved-host, and date tests; weekly workflow updates one issue; new instances must verify an actual run |
 
 ## Live Rollout
 
