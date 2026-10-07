@@ -13,12 +13,13 @@ const nav = [{ label: 'Overview', path: '', key: 'overview' }, { label: 'Resourc
     <meta name="description" content={config.description} />
     <meta name="referrer" content="no-referrer" />
     <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/png" sizes="32x32" href={href('branding/ni-favicon.png')} />
     <title>{title === config.name ? title : `${title} | ${config.name}`}</title>
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
-      <a class="brand" href={href('')} aria-label={`${config.name} overview`}><img class="brand-logo" src={href('branding/ni-logo.png')} alt="NI" width="344" height="226" /><span class="brand-text">Customer Value<br /><strong>Playbooks</strong></span></a>
+      <a class="brand" href={href('')} aria-label={`NI Customer Value Playbooks: ${config.name} overview`}><img class="brand-logo" src={href('branding/ni-logo.png')} alt="NI" width="344" height="226" /><span class="brand-text">Customer Value<br /><strong>Playbooks</strong></span></a>
       <nav class="desktop-nav" aria-label="Primary">{nav.map(item => <a class:list={{ selected: active === item.key }} href={href(item.path)} aria-current={active === item.key ? 'page' : undefined}>{item.label}</a>)}</nav>
       <div class="header-actions"><a class="icon-button" href={href('library/')} aria-label="Search resources" title="Search resources"><Search size={20} /></a><a class="button button-small contribute-link" href={href('contribute/')}><Plus size={16} />Contribute</a><button class="icon-button mobile-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-nav" title="Open navigation"><Menu size={22} /></button></div>
     </header>

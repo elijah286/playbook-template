@@ -1,4 +1,4 @@
-[Modern SDLC Reference Repository](https://github.com/elijah286/modern-sdlc-playbook)
+[Open the Modern SDLC Reference Playbook](https://elijah286.github.io/modern-sdlc-playbook/)
 
 # Customer Value Playbook Template
 

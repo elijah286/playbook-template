@@ -10,6 +10,15 @@
       "sha256": "e143718fec4cac4a9932d73e32d39bd6447d885df5f1aa9b080e3d09653f77cc",
       "width": 344,
       "height": 226
+    },
+    {
+      "file": "ni-favicon.png",
+      "source": "https://www.ni.com/favicon-32x32.png",
+      "observedOn": "https://www.ni.com/en.html",
+      "purpose": "Original official NI favicon",
+      "sha256": "1d3bf24fbdb85b45831c1c7f2afab9c39987f3847fa042cb5a597be76054f16e",
+      "width": 32,
+      "height": 32
     }
   ]
 }
