@@ -68,6 +68,7 @@ test('demo bundles produce one resource', () => fixture(async root => {
 test('unsafe external links are rejected', () => {
   assert.throws(() => safeUrl('javascript:alert(1)'), /Unsafe/);
   assert.throws(() => safeUrl('https://token@example.com'), /Unsafe/);
+  assert.throws(() => safeUrl('https://user:never-log-this@example.com'), error => !error.message.includes('never-log-this'));
   assert.throws(() => safeUrl('https://example.com/file?token=secret'), /bearer credentials/);
   assert.throws(() => safeUrl('https://example.com/file?X-Amz-Signature=secret'), /bearer credentials/);
   assert.equal(safeUrl('https://www.ni.com/docs/en-US/'), 'https://www.ni.com/docs/en-US/');

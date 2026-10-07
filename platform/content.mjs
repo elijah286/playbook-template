@@ -24,8 +24,9 @@ function requireValue(condition, message) {
 }
 
 export function safeUrl(value) {
-  const url = new URL(value);
-  requireValue(url.protocol === 'https:' && !url.username && !url.password, `Unsafe external URL: ${value}`);
+  let url;
+  try { url = new URL(value); } catch { throw new Error('Unsafe external URL: a valid HTTPS destination is required'); }
+  requireValue(url.protocol === 'https:' && !url.username && !url.password, 'Unsafe external URL: HTTPS without embedded credentials is required');
   requireValue(![...url.searchParams.keys()].some(key => /^(?:access_token|auth|authorization|token|sig|signature|secret|api[-_]?key|password|x-amz-.+|awsaccesskeyid)$/i.test(key)), 'External URLs must not embed bearer credentials or signed access tokens');
   return value;
 }

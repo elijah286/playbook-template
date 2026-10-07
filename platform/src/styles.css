@@ -270,6 +270,7 @@ img {
 .hero-inner h1 {
   max-width: 780px;
   margin-bottom: 23px;
+  overflow-wrap: anywhere;
 }
 .hero-thesis {
   font-size: 18px;
@@ -282,6 +283,10 @@ img {
   align-items: center;
   gap: 30px;
   margin-top: 27px;
+}
+.hero-actions > a {
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .outcome-line {
   display: flex;
