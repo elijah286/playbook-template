@@ -1,0 +1,19 @@
+{
+  "id": "actor-framework-introduction",
+  "title": "Introduction to Actor Framework",
+  "summary": "Elijah Kerry's original presentation on Actor Framework, abstraction, and the path toward a more mature software engineering practice.",
+  "featured": true,
+  "categories": ["fae-enablement", "customer-enablement", "partner-enablement"],
+  "topics": ["architecture", "LabVIEW", "Actor Framework", "abstraction", "software maturity"],
+  "outcomes": ["maintainability", "separation of responsibilities"],
+  "relatedResources": ["architecture-decision-guide", "verification-and-delivery"],
+  "reviewStatus": "Original deck approved for public demo distribution by its owner",
+  "keyMessages": "The original deck is provided intact. Its 76 slides include hidden slides and speaker notes. No hidden-slide or notes text is extracted into the site or search index.",
+  "provenance": {
+    "description": "Copied intact from Elijah Kerry's Actor Framework overview repository at the specified revision, with explicit owner approval for this public demo. This approval is not a general redistribution license.",
+    "url": "https://github.com/elijah286/actor-framework-overview",
+    "revision": "be7ab2b1305ea8cd5f250e983b7619ad21588dfa",
+    "blob": "318165f0a3d42450d9a87a94614ff84e6846ab2d"
+  },
+  "links": [{ "title": "Actor Framework on NI Documentation", "url": "https://www.ni.com/docs/en-US/bundle/labview/page/actor-framework.html" }]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Maximizing the Value of NI Software with AI",
+  "description": "Identify useful AI-assisted work, set practical boundaries, and connect the result to customer value.",
+  "valueThesis": "Use AI where its output can be inspected and verified. Turn documentation, review, and customer context into better decisions without surrendering engineering responsibility.",
+  "maintainer": "Elijah Kerry",
+  "featured": true,
+  "publicApproved": true,
+  "overview": { "audienceDescription": "For sales, field application engineering, and customer success teams exploring AI-assisted workflows with customers." }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Modern Software Development Lifecycle",
+  "description": "Build maintainable, testable measurement and automation software with LabVIEW.",
+  "valueThesis": "Connect customer outcomes to a repeatable practice for architecture, testing, automation, and long-term evolution.",
+  "maintainer": "Elijah Kerry",
+  "publicApproved": true,
+  "legacyResourceRoutes": true,
+  "overview": { "audienceDescription": "For sales, field application engineering, and customer success teams, with resources for partners and customers." }
+}

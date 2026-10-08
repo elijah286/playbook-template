@@ -4,7 +4,7 @@
 
 The repository owner is responsible for distribution approval, maintenance, invitations, moderation, and platform adoption. Assign a hub maintainer in `hub.json` and topic maintainers in each playbook configuration. One repository is one confidentiality boundary: readers can inspect all playbooks, shared resources, and history, including drafts. This hub can include approved partners/customers only when all its content has the same authorized audience. Split NI-only and partner-shareable material when their access differs. CODEOWNERS may enforce editorial review, not reader isolation.
 
-The approved personal demo is an explicit exception: private source, publicly readable website. GitHub Pro supports public Pages from a private personal repository, but does not create access-controlled personal Pages. Personal private collaborators receive write access. This is not the production NI/partner reader model.
+The approved personal hub is an explicit public-demonstration exception: its source and website are public, and the owner approved the included content. Private drafts in a public source are still publicly readable in Git/history. Private publication never permits public source or public Pages. Personal accounts do not offer the protected NI/partner reader model.
 
 ## Private Production Hosting Checkpoint
 

@@ -1,11 +1,11 @@
 {
   "name": "Customer Value Playbooks",
   "description": "Practical resources organized around customer outcomes and shared implementation work.",
-  "valueThesis": "Find a playbook for your customer challenge. Put useful resources into practice, then bring questions and lessons back to the team.",
-  "repository": "",
-  "maintainer": "playbook-maintainer",
-  "site": { "origin": "https://example.invalid", "base": "/" },
-  "publication": { "mode": "private", "publicDemoApproved": false },
+  "valueThesis": "Practical materials for better customer conversations and engineering decisions. Choose your challenge, find the resources, and build on the team's experience.",
+  "repository": "elijah286/playbook-template",
+  "maintainer": "Elijah Kerry",
+  "site": { "origin": "https://elijah286.github.io", "base": "/playbook-template/" },
+  "publication": { "mode": "public-demo", "publicDemoApproved": true },
   "assets": { "maxLocalBytes": 25000000 },
   "analytics": { "enabled": false },
   "platformVersion": "0.1.0"

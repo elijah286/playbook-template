@@ -1,0 +1,16 @@
+Subject: Exploring an AI-assisted workflow for [customer outcome]
+
+Hi [Name],
+
+I'd like to understand where your team spends time creating, reviewing, or maintaining the work around [NI software or system].
+
+Could we choose one bounded task to explore together? It would help to know:
+
+- What result would make a meaningful difference?
+- What context can we use within your approved data and AI policies?
+- Who should review the output, and what evidence would establish that it is useful?
+
+We can start with a small, reviewable example and assess both the benefit and the verification effort before making a broader recommendation.
+
+Best,
+[Your name]

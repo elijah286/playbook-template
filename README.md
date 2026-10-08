@@ -1,18 +1,18 @@
-[Open the Modern SDLC Reference Playbook](https://elijah286.github.io/modern-sdlc-playbook/)
+[Open Customer Value Playbooks](https://elijah286.github.io/playbook-template/)
 
-# Customer Value Playbook Template
+# Customer Value Playbooks
 
-A clean, reusable multi-playbook hub with one shared platform, original approved NI branding, and independently organized topic resources. Production content does not belong in this template; the populated Modern Software Development Lifecycle example lives in a separate repository.
+A self-contained public demonstration of the multi-playbook hub, with original approved NI branding and independently organized AI and Modern SDLC resources. This repository owns its content, assets, publisher, and Discussions. The owner explicitly approved this populated public demonstration; it is not the protected NI website.
 
-## Create Your Hub
+## Manage This Hub
 
-Use **Use this template** to create a **private** repository. Customize the collection identity, approved publication boundary, maintainer, and actual hosting URL in `hub.json`. Create topic folders under `playbooks/`, each with its own `playbook.json` and `resources/`. Published playbooks are discovered automatically; no central catalog edit is required.
+Collection identity, publication approval, ownership, and the actual hosting URL live in `hub.json`. Each topic folder under `playbooks/` owns its `playbook.json` and `resources/`. Published playbooks are discovered automatically; no central catalog edit is required. This populated hub is no longer an empty template for repository generation.
 
 Use **Actions > Add Playbook to Hub** to prepare a draft PR with a configuration and typed resource folders. Review the purpose and audience, add approved materials, and change `status` to `published` before merging. All playbooks share the hub's reader access and Discussions. Hub search spans the collection; each playbook has a scoped library, audience paths, contribution entry, and compact resource-first overview.
 
 Resources are normally owned by their playbook. Optional `sharedResources` references include reusable files from `shared/resources/` by stable ID, without duplicate downloads or index records. Email templates, guides, code bundles, slide previews, and linked videos use the same publishing pipeline. See the [content contract](docs/content.md).
 
-For a separate confidentiality boundary, use **Actions > Create New Playbook** after configuring the approved owner, actor allowlist, and separate provisioning credential. This creates a private repository/hub, not a folder in this hub. It cannot deploy until access-controlled hosting is configured and verified. Legacy instances with only a root `playbook.json` and `resources/` remain supported.
+For a separate confidentiality boundary, provision from an independently maintained clean template after administrator approval. **Create New Playbook** deliberately refuses a populated source such as this hub. A separate private instance cannot deploy until access-controlled hosting is configured and verified. Legacy instances with only a root `playbook.json` and `resources/` remain supported.
 
 - [Owner Customization](docs/customization.md)
 - [Browser Contribution Guide](docs/contributing.md)

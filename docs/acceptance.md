@@ -2,6 +2,12 @@
 
 Status meanings: **Passed**, **Failed**, **Blocked**, and **Not Run**. This is a template baseline, not certification of a new instance. The separately approved reference has its own report. A public personal Pages demo does not satisfy enterprise-private acceptance.
 
+## Current Hub Role
+
+On 2026-10-08 the owner approved replacing the empty-template role with two populated, independently published hubs. This repository owns the public demonstration at `https://elijah286.github.io/playbook-template/`; NI owns a separate protected site and its own resource copies. Both now contain two playbooks and 13 resources. Earlier empty-template evidence below is historical. Successful source pushes alone are not proof of a website deployment: confirm the Pages deploy job and actual site content for the publishing revision.
+
+The publication boundary now has four regression tests: private source, positively verified private Pages, missing-site failure safety, exact destination matching, and the explicitly approved public-demo exception. A public source is allowed only for that approved demonstration, never for private NI publication.
+
 ## Recorded Local Evidence
 
 - Node 22.22.0 / npm 10.9.4; exact dependency lock; dependency audit reported zero vulnerabilities after updating to Astro 7.3.6.
