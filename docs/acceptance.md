@@ -8,6 +8,8 @@ On 2026-10-08 the owner approved replacing the empty-template role with two popu
 
 The publication boundary now has four regression tests: private source, positively verified private Pages, missing-site failure safety, exact destination matching, and the explicitly approved public-demo exception. A public source is allowed only for that approved demonstration, never for private NI publication.
 
+Deployment recorded on 2026-10-08: [run 37809718686](https://github.com/elijah286/playbook-template/actions/runs/37809718686) completed both build and deploy successfully for `9177305`. The actual public HTML and browser showed the two-playbook directory, including AI and Modern SDLC, at this repository's own URL. Full local suites passed 42 personal and 43 NI tests. NI's separately owned protected deployment was also verified; the older `/modern-sdlc-playbook/` demo is a different repository, not this hub's publishing source.
+
 ## Recorded Local Evidence
 
 - Node 22.22.0 / npm 10.9.4; exact dependency lock; dependency audit reported zero vulnerabilities after updating to Astro 7.3.6.
