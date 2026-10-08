@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { discover, safeUrl, loadPlaybook } from '../content.mjs';
+import { discover, safeUrl, loadPlaybook, loadCollection } from '../content.mjs';
 
 const privateConfig = { publication: { mode: 'private' } };
 const publicConfig = { publication: { mode: 'public-demo', publicDemoApproved: true } };
@@ -97,4 +97,81 @@ test('owners can tailor copy for any topic without adding layout or branding set
   await assert.rejects(loadPlaybook(root), /only supported text copy/);
   await writeFile(join(root, 'playbook.json'), JSON.stringify({ ...config, lifecycle: [] }));
   await assert.rejects(loadPlaybook(root), /five shared/);
+}));
+
+async function collectionFixture(root) {
+  await writeFile(join(root, 'hub.json'), JSON.stringify({ ...privateConfig, name: 'Customer Value Playbooks', valueThesis: 'Find practical resources.', site: { origin: 'https://example.invalid', base: '/' } }));
+  for (const slug of ['ai-era', 'modern-sdlc']) {
+    await mkdir(join(root, 'playbooks', slug, 'resources'), { recursive: true });
+    await writeFile(join(root, 'playbooks', slug, 'playbook.json'), JSON.stringify({ name: slug, valueThesis: `Value for ${slug}` }));
+    await writeFile(join(root, 'playbooks', slug, 'resources', 'start.md'), `# ${slug}`);
+  }
+}
+
+test('playbooks are folder-discovered with scoped, collision-free resources', () => fixture(async root => {
+  await collectionFixture(root);
+  const hub = await loadCollection(root);
+  assert.equal(hub.legacy, false);
+  assert.equal(hub.playbooks.length, 2);
+  assert.deepEqual(hub.resources.map(resource => resource.id), ['ai-era--start', 'modern-sdlc--start']);
+  assert.equal(hub.playbooks[0].resources[0].playbook, 'ai-era');
+  assert.equal(hub.playbooks[0].config.site.base, '/');
+}));
+
+test('shared resources are explicitly included once and unused assets stay out', () => fixture(async root => {
+  await collectionFixture(root);
+  await mkdir(join(root, 'shared', 'resources'), { recursive: true });
+  await writeFile(join(root, 'shared', 'resources', 'common.md'), '# Common');
+  await writeFile(join(root, 'shared', 'resources', 'unused.md'), '# Unused');
+  for (const slug of ['ai-era', 'modern-sdlc']) await writeFile(join(root, 'playbooks', slug, 'playbook.json'), JSON.stringify({ name: slug, valueThesis: 'Useful materials', sharedResources: ['common'] }));
+  const hub = await loadCollection(root);
+  assert.equal(hub.resources.length, 3);
+  assert.deepEqual(hub.resources.find(resource => resource.id === 'shared--common').playbooks, ['ai-era', 'modern-sdlc']);
+  assert.equal(hub.resources.some(resource => resource.localId === 'unused'), false);
+}));
+
+test('playbooks cannot override the hub publication boundary and drafts stay out', () => fixture(async root => {
+  await collectionFixture(root);
+  const filename = join(root, 'playbooks', 'ai-era', 'playbook.json');
+  await writeFile(filename, JSON.stringify({ name: 'AI', valueThesis: 'AI', publication: { mode: 'public-demo', publicDemoApproved: true } }));
+  await assert.rejects(loadCollection(root), /inherit publication/);
+  await writeFile(filename, JSON.stringify({ name: 'AI', valueThesis: 'AI', status: 'draft' }));
+  assert.equal((await loadCollection(root)).playbooks.length, 1);
+}));
+
+test('missing shared references and playbook symlinks fail closed', () => fixture(async root => {
+  await collectionFixture(root);
+  const filename = join(root, 'playbooks', 'ai-era', 'playbook.json');
+  await writeFile(filename, JSON.stringify({ name: 'AI', valueThesis: 'AI', sharedResources: ['missing'] }));
+  await assert.rejects(loadCollection(root), /missing or unpublished/);
+  await rm(join(root, 'playbooks', 'ai-era'), { recursive: true });
+  await symlink(join(root, 'playbooks', 'modern-sdlc'), join(root, 'playbooks', 'ai-era'));
+  await assert.rejects(loadCollection(root), /symlinks/);
+}));
+
+test('single-playbook instances remain compatible', () => fixture(async root => {
+  await writeFile(join(root, 'playbook.json'), JSON.stringify({ ...privateConfig, name: 'Existing Playbook', valueThesis: 'Existing value', site: { origin: 'https://example.invalid', base: '/' } }));
+  const hub = await loadCollection(root);
+  assert.equal(hub.legacy, true);
+  assert.equal(hub.playbooks[0].config.name, 'Existing Playbook');
+}));
+
+test('shared directory symlinks cannot escape the collection', () => fixture(async root => {
+  await collectionFixture(root);
+  await mkdir(join(root, 'outside', 'resources'), { recursive: true });
+  await symlink(join(root, 'outside'), join(root, 'shared'));
+  await assert.rejects(loadCollection(root), /Shared resources must be a regular directory/);
+}));
+
+test('email templates and explicit code bundle files are previewed without execution', () => fixture(async root => {
+  await writeFile(join(root, 'resources', 'message.txt'), 'Subject: Next steps\n\nHello team');
+  await mkdir(join(root, 'resources', 'example'));
+  await writeFile(join(root, 'resources', 'example', 'README.md'), '# Example');
+  await writeFile(join(root, 'resources', 'example', 'example.mjs'), 'throw new Error("never execute");');
+  await writeFile(join(root, 'resources', 'example', '_bundle.json'), JSON.stringify({ type: 'technical-project', files: ['example.mjs'] }));
+  const resources = await discover(root, privateConfig);
+  assert.equal(resources.find(resource => resource.type === 'email-template').source, 'Subject: Next steps\n\nHello team');
+  assert.equal(resources.find(resource => resource.type === 'technical-project').files[0].source, 'throw new Error("never execute");');
+  await writeFile(join(root, 'resources', 'example', '_bundle.json'), JSON.stringify({ files: ['../../../outside.mjs'] }));
+  await assert.rejects(discover(root, privateConfig), /escapes resources/);
 }));

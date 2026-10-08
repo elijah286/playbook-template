@@ -1,14 +1,17 @@
 ---
-import { ArrowUpRight, Presentation, FileText, Play, Code, Link } from '@lucide/astro';
-import { resourceUrl, audiences, previewUrl } from '../data.mjs';
-const { resource } = Astro.props;
+import { ArrowUpRight, Presentation, FileText, Play, Code, Link, Images } from '@lucide/astro';
+import { resourceUrl, audiences, previewUrl, slideUrls, assetUrl, playbooks, bookHref } from '../data.mjs';
+const { resource, book = null } = Astro.props;
+const url = resourceUrl(resource, book);
 const icons = { presentation: Presentation, demonstration: Play, 'technical-project': Code, reference: Link };
 const Icon = icons[resource.type] ?? FileText;
+const slides = slideUrls(resource);
 ---
-<article class="resource-card">
-  {resource.preview && <img class="resource-cover" src={previewUrl(resource)} alt="" width="1680" height="876" loading="lazy" />}
+<article class="resource-card" data-resource-id={resource.id}>
+  {slides.length ? <a class="preview-trigger" href={url} data-slide-preview data-slides={JSON.stringify(slides)} data-title={resource.title} data-download={assetUrl(resource)} aria-label={`Preview slides: ${resource.title}`} aria-haspopup="dialog" title={`Preview ${slides.length} slides`}><img class="resource-cover" src={previewUrl(resource)} alt="" width="1440" height="810" loading="lazy" /><span class="preview-caption"><Images size={16} />Preview<span>{slides.length} slides</span></span></a> : previewUrl(resource) && <a href={url} aria-label={resource.title}><img class="resource-cover" src={previewUrl(resource)} alt="" width="1440" height="810" loading="lazy" /></a>}
   <div class="resource-top"><span class={`resource-icon type-${resource.type}`}><Icon size={22} /></span><span class="type-label">{resource.type.replace(/-/g, ' ')}</span>{resource.duration && <span class="duration">{resource.duration}</span>}</div>
-  <h3><a href={resourceUrl(resource)}>{resource.title}<ArrowUpRight size={18} /></a></h3>
+  <h3><a href={url}>{resource.title}<ArrowUpRight size={18} /></a></h3>
   <p>{resource.summary || 'Open the resource to inspect its original content and available metadata.'}</p>
   <div class="resource-audience">{resource.audiences.slice(0, 2).map(audience => <span>{audiences[audience]}</span>)}{resource.audiences.length > 2 && <span>+{resource.audiences.length - 2}</span>}</div>
+  {!book && resource.playbooks?.length > 0 && <div class="resource-membership">{resource.playbooks.map(slug => playbooks.find(candidate => candidate.slug === slug)).filter(Boolean).map(candidate => <a href={bookHref(candidate)}>{candidate.config.name}</a>)}</div>}
 </article>

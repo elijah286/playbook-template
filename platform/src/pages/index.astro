@@ -1,37 +1,31 @@
 ---
-import { ArrowRight, ArrowUpRight, Search, GitBranch, CheckCircle2, Layers, MessageSquare } from '@lucide/astro';
+import { ArrowRight, Layers, MessageSquare } from '@lucide/astro';
 import Shell from '../layouts/Shell.astro';
 import ResourceCard from '../components/ResourceCard.astro';
-import { config, resources, href, audiences } from '../data.mjs';
-const featured = resources.filter(resource => resource.featured).slice(0, 3);
-const outcomes = config.outcomes ?? ['Customer-Defined Outcomes', 'Shared Implementation Practice', 'Reviewable Evidence'];
+import PlaybookDirectory from '../components/PlaybookDirectory.astro';
+import { config as hubConfig, resources as allResources, playbooks, legacy, bookHref, previewUrl } from '../data.mjs';
+const { book = legacy ? playbooks[0] : null } = Astro.props;
+const config = book?.config ?? hubConfig;
+const resources = book?.resources ?? allResources;
+const href = route => bookHref(book, route);
+const featured = resources.filter(resource => resource.featured).sort((left, right) => Number(Boolean(previewUrl(right))) - Number(Boolean(previewUrl(left)))).slice(0, 3);
 const copy = {
-  pathsHeading: 'A Shared Practice. Different Starting Points.',
-  featuredHeading: 'Put the Principles Into Practice.',
-  communityHeading: 'Bring the Team Into the Conversation.',
-  communityDescription: 'Questions, implementation lessons, and next steps for the invited playbook team.',
-  primaryAction: 'Explore the Resources',
-  secondaryAction: 'Find Your Starting Point',
+  featuredHeading: 'Recommended Starting Points',
+  primaryAction: 'Browse Resources',
+  secondaryAction: 'Find Your Audience',
+  audienceDescription: 'For sales, field application engineering, and customer success teams, with shared resources for partners and customers.',
   ...config.overview,
 };
-const steps = config.lifecycle ?? [
-  { name: 'Discover', summary: 'Define the customer outcome', search: 'discovery' },
-  { name: 'Align', summary: 'Agree the next decision', search: 'value' },
-  { name: 'Enable', summary: 'Build the shared practice', search: 'enablement' },
-  { name: 'Deliver', summary: 'Put the plan into practice', search: 'delivery' },
-  { name: 'Evolve', summary: 'Review and improve', search: 'success' },
-];
 ---
-<Shell active="overview">
+<Shell active="overview" book={book}>
+  {book ? <>
   <section class="hero-band">
     <div class="hero-inner"><div class="eyebrow"><span></span>{config.publication.mode === 'public-demo' ? 'REFERENCE PLAYBOOK' : 'CUSTOMER VALUE PLAYBOOK'}<span class="edition">{config.edition ?? '01'}</span></div>
       <h1>{config.name}</h1><p class="hero-thesis">{config.valueThesis}</p>
-      <div class="hero-actions"><a class="button" href={href('library/')}>{copy.primaryAction}<ArrowRight size={19} /></a><a class="text-link" href={href('paths/')}>{copy.secondaryAction}<ArrowRight size={18} /></a></div>
-      <div class="outcome-line">{outcomes.map(outcome => <span><CheckCircle2 size={17} />{outcome}</span>)}</div>
+      <p class="hero-audience">{copy.audienceDescription}</p>
+      <div class="hero-actions"><a class="button" href={href('library/')}>{copy.primaryAction}<ArrowRight size={19} /></a><a class="text-link" href={href('paths/')}>{copy.secondaryAction}<ArrowRight size={18} /></a><a class="text-link" href={href('community/')}><MessageSquare size={18} />Contribute &amp; Ask</a></div>
     </div>
-    <div class="lifecycle-rail" aria-label="Playbook stages">{steps.map((step, index) => <a href={href(`library/?q=${encodeURIComponent(step.search)}`)}><span class="step-number">0{index + 1}</span><strong>{step.name}</strong><span>{step.summary}</span><ArrowUpRight size={16} /></a>)}</div>
   </section>
-  <section class="content-section"><div class="section-heading"><div><p class="eyebrow">START WITH YOUR ROLE</p><h2>{copy.pathsHeading}</h2></div><a class="text-link" href={href('paths/')}>All Audience Paths<ArrowRight size={16} /></a></div><div class="audience-paths">{Object.entries(audiences).map(([key, label], index) => <a href={href(`paths/?audience=${key}`)}><span>0{index + 1}</span><strong>{label}</strong><ArrowUpRight size={17} /></a>)}</div></section>
-  <section class="content-section featured-section"><div class="section-heading"><div><p class="eyebrow">CURATED STARTING POINTS</p><h2>{copy.featuredHeading}</h2></div><a class="text-link" href={href('library/')}>Resource Library<ArrowRight size={16} /></a></div>{featured.length ? <div class="resource-grid">{featured.map(resource => <ResourceCard resource={resource} />)}</div> : <div class="empty-state"><Layers size={30} /><h3>No Curated Resources Yet</h3><p>The playbook owner has not selected any featured resources.</p><a class="button" href={href('contribute/')}>Add a Resource<ArrowRight size={17} /></a></div>}</section>
-  <section class="community-band"><div><p class="eyebrow">KEEP THE CONVERSATION GOING</p><h2>{copy.communityHeading}</h2><p>{copy.communityDescription}</p></div><a class="button button-outline" href={href('community/')}><MessageSquare size={19} />Open Community<ArrowUpRight size={17} /></a></section>
+  <section class="content-section featured-section"><div class="section-heading"><div><p class="eyebrow">CURATED STARTING POINTS</p><h2>{copy.featuredHeading}</h2></div><a class="text-link" href={href('library/')}>Resource Library<ArrowRight size={16} /></a></div>{featured.length ? <div class="resource-grid">{featured.map(resource => <ResourceCard resource={resource} book={book} />)}</div> : <div class="empty-state"><Layers size={30} /><h3>No Curated Resources Yet</h3><p>The playbook owner has not selected any featured resources.</p><a class="button" href={href('contribute/')}>Add a Resource<ArrowRight size={17} /></a></div>}</section>
+  </> : <PlaybookDirectory />}
 </Shell>

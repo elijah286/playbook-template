@@ -1,0 +1,2 @@
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends libreoffice-impress poppler-utils fonts-liberation fonts-dejavu-core fonts-crosextra-carlito fonts-crosextra-caladea && rm -rf /var/lib/apt/lists/*

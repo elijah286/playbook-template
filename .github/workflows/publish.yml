@@ -36,6 +36,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - name: Prepare isolated slide renderer
+        run: |
+          if node --input-type=module -e "import { loadCollection } from './platform/content.mjs'; const { resources } = await loadCollection(); process.exit(resources.some(resource => resource.extension === '.pptx' || resource.extension === '.pdf' && resource.type === 'presentation') ? 0 : 1)"; then
+            docker build -t playbook-preview-renderer -f platform/preview-renderer.Dockerfile platform
+            echo "PLAYBOOK_PREVIEW_RENDERER=docker" >> "$GITHUB_ENV"
+          fi
       - run: npm run build && node platform/verify-build.mjs
       - run: npm audit --audit-level=high
       - id: hosting

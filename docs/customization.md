@@ -1,6 +1,6 @@
 # One Layout, Any Topic
 
-Every playbook uses the same versioned renderer: navigation, overview, five-stage path, audience paths, curated resources, library, resource details, contribution entry, and community entry. There are no topic-specific page templates, theme generators, or dynamically invented NI illustrations.
+Every playbook uses the same versioned renderer: navigation, a compact overview, audience paths, curated resources, a searchable library, resource details, presentation previews, contribution entry, and community entry. The overview prioritizes a short value statement, audience description, three entry points, and recommended resources. Detailed audience choices stay on Audience Paths rather than competing with resources on the overview. There are no topic-specific page templates, theme generators, or dynamically invented NI illustrations.
 
 ## Light and Dark Modes
 
@@ -10,26 +10,25 @@ Both palettes are defined by shared CSS variables in `platform/src/styles.css`. 
 
 ## Owner-Editable Content
 
-Edit `playbook.json` in GitHub to customize:
+Edit `hub.json` for the collection name, value thesis, maintainer, repository, actual site URL, and publication policy. Each folder under `playbooks/` has its own `playbook.json` for topic-specific copy:
 
 - `name`, `description`, and `valueThesis`: topic and customer context.
-- `overview`: section headings, supporting copy, and action labels.
-- `lifecycle`: five stage names, summaries, and local library search terms.
-- `outcomes`: three customer outcome labels; these are not automatically validated proof points.
+- `overview.featuredHeading`, `.audienceDescription`, `.primaryAction`, and `.secondaryAction`: recommended-resource heading, intended audience, and the two resource/audience action labels.
+- Legacy `overview` section-copy fields, `lifecycle`, and `outcomes` remain accepted for compatibility; the overview no longer displays stage, outcome, or role rails.
 - `audienceGuidance`: starting-point headings for the five standard audience roles.
 - `maintainer`: content ownership.
 
-Add resources under `resources/`. Set `featured: true` in a resource sidecar to curate an overview starting point. Titles, summaries, audiences, relationships, and HTTPS references customize content, not the page layout. Routine content edits do not require a renderer change.
+Add resources under `resources/`. Set `featured: true` in a resource sidecar to curate an overview starting point. Up to three featured resources appear, with visual previews first and title order within each group. Titles, summaries, audiences, relationships, and HTTPS references customize content, not the page layout. Routine content edits do not require a renderer change.
+
+In a hub, those resources belong under `playbooks/<slug>/resources/`, not the root resource tree. Set `featured: true` on a playbook to prioritize it in the directory. Published playbooks otherwise sort by title. Set `status: draft` or `archived` to keep a playbook out of routes and discovery. `sharedResources` explicitly includes occasional reused resources without making a central resource index mandatory. Legacy single-playbook instances remain supported.
 
 ```json
 {
   "overview": {
-    "pathsHeading": "Find Your Starting Point",
-    "featuredHeading": "Recommended Resources",
-    "communityHeading": "Continue the Conversation",
-    "communityDescription": "Questions and implementation lessons for this topic.",
-    "primaryAction": "Explore the Resources",
-    "secondaryAction": "Choose an Audience Path"
+    "featuredHeading": "Recommended Starting Points",
+    "audienceDescription": "For sales, field application engineering, and customer success teams.",
+    "primaryAction": "Browse Resources",
+    "secondaryAction": "Find Your Audience"
   }
 }
 ```

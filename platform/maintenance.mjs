@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { appendFile, mkdir, writeFile } from 'node:fs/promises';
 import ipaddr from 'ipaddr.js';
 import { marked } from 'marked';
-import { loadPlaybook, safeUrl } from './content.mjs';
+import { loadCollection, safeUrl } from './content.mjs';
 import { api } from './github.mjs';
 
 export function publicAddress(address) {
@@ -49,7 +49,7 @@ export async function checkLink(value, allowedHosts, redirects = 0) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  const { config, resources } = await loadPlaybook(process.env.PLAYBOOK_ROOT ?? process.cwd());
+  const { config, resources } = await loadCollection(process.env.PLAYBOOK_ROOT ?? process.cwd());
   const allowedHosts = config.maintenance?.allowedHosts ?? ['www.ni.com', 'ni.com', 'ni.github.io', 'github.com'];
   if (!Array.isArray(allowedHosts) || allowedHosts.some(host => typeof host !== 'string' || !/^[a-z0-9.-]+$/.test(host))) throw new Error('Maintenance host allowlist must contain literal approved DNS names');
   const urls = new Set();

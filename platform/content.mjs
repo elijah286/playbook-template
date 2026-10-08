@@ -15,7 +15,8 @@ export const categories = {
   'customer-enablement': 'Customer Enablement',
 };
 export const audiences = { sales: 'Sales / SBM', fae: 'FAE / Technical', 'customer-success': 'Customer Success', partner: 'Partner', customer: 'Customer' };
-const formats = { '.md': 'guide', '.pptx': 'presentation', '.pdf': 'document', '.mp4': 'video', '.json': 'reference' };
+const sourceFormats = new Set(['.js', '.mjs', '.ts', '.py', '.cs', '.cpp', '.c', '.h', '.xml', '.lvproj']);
+const formats = { '.md': 'guide', '.pptx': 'presentation', '.pdf': 'document', '.mp4': 'video', '.json': 'reference', '.txt': 'email-template', ...Object.fromEntries([...sourceFormats].map(extension => [extension, 'technical-project'])) };
 const identifier = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const forbiddenNames = /^(?:\.git|\.github|node_modules|dist|build|ci-out|\.env.*|.*\.(?:pem|key))$/i;
 
@@ -42,7 +43,7 @@ async function readJson(file, fallback) {
   catch (error) { if (error.code === 'ENOENT' && fallback !== undefined) return fallback; throw error; }
 }
 
-export async function discover(root, config) {
+export async function discover(root, config, { relatedIds = [] } = {}) {
   requireValue(['private', 'public-demo'].includes(config.publication?.mode), 'publication.mode must be private or public-demo');
   requireValue(config.publication.mode !== 'public-demo' || config.publication.publicDemoApproved === true, 'Public demo requires explicit distribution approval');
   const resourceRoot = resolve(root, 'resources');
@@ -52,6 +53,7 @@ export async function discover(root, config) {
     const rootInfo = await lstat(resourceRoot);
     requireValue(rootInfo.isDirectory() && !rootInfo.isSymbolicLink(), 'Resource root must be a regular directory; symlinks are not allowed');
   } catch (error) { if (error.code === 'ENOENT') return resources; throw error; }
+  const canonicalResourceRoot = await realpath(resourceRoot);
 
   async function visit(directory, inherited = {}) {
     let entries;
@@ -87,7 +89,25 @@ export async function discover(root, config) {
       requireValue(info.size <= (config.assets?.maxLocalBytes ?? 25000000), `${id}: file exceeds local asset budget; use approved external storage`);
       const buffer = await readFile(absolute);
       const content = extension === '.md' ? buffer.toString('utf8') : '';
-      requireValue(metadata.type === undefined || ['guide', 'presentation', 'document', 'video', 'reference', 'demonstration', 'technical-project'].includes(metadata.type), `${id}: unsupported resource type`);
+      requireValue(metadata.type === undefined || ['guide', 'presentation', 'document', 'video', 'reference', 'demonstration', 'technical-project', 'email-template'].includes(metadata.type), `${id}: unsupported resource type`);
+      const textSource = sourceFormats.has(extension) || extension === '.txt';
+      requireValue(!textSource || info.size <= 1000000, `${id}: text previews must be under 1 MB`);
+      requireValue(metadata.files === undefined || Array.isArray(metadata.files) && metadata.files.every(file => typeof file === 'string'), `${id}: files must list supporting source paths`);
+      const files = [];
+      let bundleBytes = info.size;
+      for (const name of [...new Set(metadata.files ?? [])]) {
+        const filePath = resolve(directory, name);
+        const fileRelative = relative(resourceRoot, filePath);
+        const fileExtension = extname(filePath).toLowerCase();
+        requireValue(fileRelative !== '..' && !fileRelative.startsWith(`..${sep}`) && !fileRelative.split(sep).some(part => forbiddenNames.test(part) || part.startsWith('.')), `${id}: supporting file escapes resources or uses a forbidden path`);
+        requireValue(sourceFormats.has(fileExtension) || ['.md', '.txt', '.json'].includes(fileExtension), `${id}: supporting files must be approved text/source formats`);
+        const fileInfo = await lstat(filePath);
+        requireValue(fileInfo.isFile() && !fileInfo.isSymbolicLink() && fileInfo.size <= 1000000 && (await realpath(filePath)).startsWith(`${canonicalResourceRoot}${sep}`), `${id}: supporting file must be a regular source file under 1 MB`);
+        const data = await readFile(filePath);
+        bundleBytes += data.length;
+        requireValue(bundleBytes <= (config.assets?.maxLocalBytes ?? 25000000), `${id}: bundle exceeds local asset budget`);
+        files.push({ name, absolute: filePath, extension: fileExtension, size: data.length, sha256: createHash('sha256').update(data).digest('hex'), source: data.toString('utf8') });
+      }
       let preview = null;
       if (metadata.preview) {
         requireValue(typeof metadata.preview === 'string', `${id}: preview must be a path`);
@@ -97,7 +117,7 @@ export async function discover(root, config) {
         const previewInfo = await lstat(previewPath);
         requireValue(previewInfo.isFile() && !previewInfo.isSymbolicLink() && previewInfo.size <= 1000000, `${id}: preview must be a regular image under 1 MB`);
         const canonicalPreview = await realpath(previewPath);
-        requireValue(canonicalPreview.startsWith(`${resourceRoot}${sep}`), `${id}: preview escapes resources`);
+        requireValue(canonicalPreview.startsWith(`${canonicalResourceRoot}${sep}`), `${id}: preview escapes resources`);
         preview = { absolute: previewPath, extension: extname(previewPath) };
       }
       for (const field of ['title', 'summary', 'owner', 'duration', 'prerequisites', 'reviewStatus', 'reviewDate', 'keyMessages']) requireValue(metadata[field] === undefined || typeof metadata[field] === 'string', `${id}: ${field} must be text`);
@@ -108,11 +128,11 @@ export async function discover(root, config) {
       if (content) marked.walkTokens(marked.lexer(content), token => {
         if (['link', 'image'].includes(token.type)) requireValue(token.href.startsWith('#') || /^https:\/\//.test(token.href) && safeUrl(token.href), `${id}: Markdown links must be HTTPS or same-page anchors`);
       });
-      resources.push({ ...metadata, preview, id, title: metadata.title ?? basename(entry.name, extension).replace(/[-_]/g, ' '), type: metadata.type ?? formats[extension], categories: selectedCategories, audiences: selectedAudiences, summary: metadata.summary ?? '', status, owner: metadata.owner ?? config.maintainer ?? 'playbook-maintainer', relatedResources: metadata.relatedResources ?? [], aliases: metadata.aliases ?? [], topics: metadata.topics ?? [], outcomes: metadata.outcomes ?? [], absolute, relative: resourcePath.split(sep).join('/'), extension, size: info.size, sha256: createHash('sha256').update(buffer).digest('hex'), content });
+      resources.push({ ...metadata, files, source: textSource ? buffer.toString('utf8') : '', preview, id, title: metadata.title ?? basename(entry.name, extension).replace(/[-_]/g, ' '), type: metadata.type ?? formats[extension], categories: selectedCategories, audiences: selectedAudiences, summary: metadata.summary ?? '', status, owner: metadata.owner ?? config.maintainer ?? 'playbook-maintainer', relatedResources: metadata.relatedResources ?? [], aliases: metadata.aliases ?? [], topics: metadata.topics ?? [], outcomes: metadata.outcomes ?? [], absolute, relative: resourcePath.split(sep).join('/'), extension, size: info.size, sha256: createHash('sha256').update(buffer).digest('hex'), content });
     }
   }
   await visit(resourceRoot);
-  const publishedIds = new Set(resources.map(resource => resource.id));
+  const publishedIds = new Set([...resources.map(resource => resource.id), ...relatedIds]);
   for (const resource of resources) {
     requireValue(Array.isArray(resource.relatedResources), `${resource.id}: relatedResources must be a list`);
     for (const related of resource.relatedResources) requireValue(publishedIds.has(related), `${resource.id}: related resource ${related} is missing or unpublished`);
@@ -124,12 +144,11 @@ export async function discover(root, config) {
   return resources.sort((left, right) => left.title.localeCompare(right.title));
 }
 
-export async function loadPlaybook(root = process.cwd()) {
-  const config = await readJson(resolve(root, 'playbook.json'));
+function validateConfig(config) {
   requireValue(typeof config.name === 'string' && config.name.trim(), 'playbook.name is required');
   requireValue(typeof config.valueThesis === 'string', 'playbook.valueThesis is required');
   if (config.overview !== undefined) {
-    const copyKeys = ['pathsHeading', 'featuredHeading', 'communityHeading', 'communityDescription', 'primaryAction', 'secondaryAction'];
+    const copyKeys = ['pathsHeading', 'featuredHeading', 'communityHeading', 'communityDescription', 'primaryAction', 'secondaryAction', 'audienceDescription'];
     requireValue(config.overview && !Array.isArray(config.overview) && typeof config.overview === 'object', 'overview must be a copy configuration object');
     for (const [key, value] of Object.entries(config.overview)) requireValue(copyKeys.includes(key) && typeof value === 'string' && value.trim() && value.length <= 1000, `overview.${key}: only supported text copy may be customized`);
   }
@@ -147,10 +166,75 @@ export async function loadPlaybook(root = process.cwd()) {
     requireValue(config.analytics?.enabled !== true, 'Analytics requires a separate approved implementation; it is not enabled by this renderer');
   if (config.site?.origin) safeUrl(config.site.origin);
   requireValue(!config.site?.base || /^\/[a-zA-Z0-9/-]*$/.test(config.site.base), 'site.base must be a safe absolute path');
-  return { config, resources: await discover(await realpath(root), config) };
+}
+
+export async function loadPlaybook(root = process.cwd(), inherited = {}, options = {}) {
+  const local = await readJson(resolve(root, 'playbook.json'));
+  for (const key of ['site', 'publication', 'repository', 'assets', 'analytics']) {
+    requireValue(!Object.hasOwn(inherited, key) || !Object.hasOwn(local, key), `Playbooks inherit ${key} from the hub; per-playbook overrides are not allowed`);
+  }
+  const config = { ...inherited, ...local };
+  validateConfig(config);
+  return { config, resources: await discover(await realpath(root), config, options) };
+}
+
+export async function loadCollection(root = process.cwd()) {
+  const hub = await readJson(resolve(root, 'hub.json'), null);
+  if (!hub) {
+    const book = await loadPlaybook(root);
+    const slug = 'playbook';
+    return { ...book, legacy: true, playbooks: [{ ...book, slug, legacy: true }] };
+  }
+  validateConfig(hub);
+  try {
+    const info = await lstat(resolve(root, 'shared'));
+    requireValue(info.isDirectory() && !info.isSymbolicLink(), 'Shared resources must be a regular directory');
+  } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  const shared = await discover(resolve(root, 'shared'), hub);
+  const sharedById = new Map(shared.map(resource => [resource.id, resource]));
+  const playbooks = [];
+  const collection = new Map();
+  const directory = resolve(root, 'playbooks');
+  let entries = [];
+  try {
+    const info = await lstat(directory);
+    requireValue(info.isDirectory() && !info.isSymbolicLink(), 'Playbooks must be a regular directory');
+    entries = await readdir(directory, { withFileTypes: true });
+  } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+    requireValue(!entry.isSymbolicLink(), `Playbook symlinks are not allowed: ${entry.name}`);
+    if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
+    const slug = entry.name;
+    requireValue(identifier.test(slug) && slug !== 'shared', `Invalid or reserved playbook slug: ${slug}`);
+    const bookRoot = resolve(directory, slug);
+    const local = await readJson(resolve(bookRoot, 'playbook.json'));
+    const status = local.status ?? 'published';
+    requireValue(['published', 'draft', 'archived'].includes(status), `${slug}: invalid playbook status`);
+    if (status !== 'published') continue;
+    requireValue(hub.publication.mode !== 'public-demo' || local.publicApproved === true, `${slug}: playbook public distribution approval is missing`);
+    requireValue(local.featured === undefined || typeof local.featured === 'boolean', `${slug}: featured must be a boolean`);
+    requireValue(local.sharedResources === undefined || Array.isArray(local.sharedResources) && local.sharedResources.every(id => typeof id === 'string' && identifier.test(id)), `${slug}: sharedResources must contain stable resource IDs`);
+    const included = [...new Set(local.sharedResources ?? [])];
+    for (const id of included) requireValue(sharedById.has(id), `${slug}: shared resource ${id} is missing or unpublished`);
+    const book = await loadPlaybook(bookRoot, hub, { relatedIds: included.map(id => `shared--${id}`) });
+    const resources = book.resources.map(resource => ({ ...resource, localId: resource.id, localAliases: resource.aliases, id: `${slug}--${resource.id}`, playbook: slug, playbooks: [slug], aliases: resource.aliases.map(id => `${slug}--${id}`), relatedResources: resource.relatedResources.map(id => id.startsWith('shared--') ? id : `${slug}--${id}`) }));
+    for (const id of included) {
+      const source = sharedById.get(id);
+      const resource = collection.get(`shared--${id}`) ?? { ...source, localId: id, localAliases: source.aliases, id: `shared--${id}`, playbook: null, playbooks: [], aliases: source.aliases.map(alias => `shared--${alias}`), relatedResources: source.relatedResources.map(related => `shared--${related}`) };
+      resource.playbooks.push(slug);
+      resources.push(resource);
+    }
+    for (const resource of resources) collection.set(resource.id, resource);
+    const available = new Set(resources.map(resource => resource.id));
+    for (const resource of resources) for (const related of resource.relatedResources) requireValue(available.has(related), `${slug}: related resource ${related} is outside this playbook`);
+    playbooks.push({ ...book, slug, resources: resources.sort((left, right) => left.title.localeCompare(right.title)), legacy: false });
+  }
+  requireValue(playbooks.filter(book => book.config.legacyResourceRoutes).length <= 1, 'Only one playbook can own legacy resource routes');
+  playbooks.sort((left, right) => Number(right.config.featured === true) - Number(left.config.featured === true) || left.config.name.localeCompare(right.config.name));
+  return { config: hub, resources: [...collection.values()].sort((left, right) => left.title.localeCompare(right.title)), playbooks, legacy: false };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  const { config, resources } = await loadPlaybook(process.env.PLAYBOOK_ROOT ?? process.cwd());
-  console.log(`Validated ${resources.length} published resources for ${config.name}. Mode: ${config.publication.mode}.`);
+  const { config, resources, playbooks } = await loadCollection(process.env.PLAYBOOK_ROOT ?? process.cwd());
+  console.log(`Validated ${resources.length} published resources across ${playbooks.length} playbooks for ${config.name}. Mode: ${config.publication.mode}.`);
 }

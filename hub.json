@@ -1,0 +1,12 @@
+{
+  "name": "Customer Value Playbooks",
+  "description": "Practical resources organized around customer outcomes and shared implementation work.",
+  "valueThesis": "Find a playbook for your customer challenge. Put useful resources into practice, then bring questions and lessons back to the team.",
+  "repository": "",
+  "maintainer": "playbook-maintainer",
+  "site": { "origin": "https://example.invalid", "base": "/" },
+  "publication": { "mode": "private", "publicDemoApproved": false },
+  "assets": { "maxLocalBytes": 25000000 },
+  "analytics": { "enabled": false },
+  "platformVersion": "0.1.0"
+}

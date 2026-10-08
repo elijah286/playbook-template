@@ -1,8 +1,8 @@
 import { appendFile } from 'node:fs/promises';
-import { loadPlaybook } from './content.mjs';
+import { loadCollection } from './content.mjs';
 import { api, optional } from './github.mjs';
 
-const { config, resources } = await loadPlaybook();
+const { config, resources } = await loadCollection();
 let deploy = false;
 let site = '';
 let state = 'Validated only: non-publishing branch.';

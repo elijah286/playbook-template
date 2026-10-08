@@ -1,0 +1,36 @@
+name: Add Playbook to Hub
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: Lowercase hyphenated playbook URL slug
+        required: true
+      name:
+        description: Playbook title
+        required: true
+      value_thesis:
+        description: Customer value and purpose
+        required: true
+permissions: {}
+concurrency:
+  group: add-playbook-${{ inputs.slug }}
+  cancel-in-progress: false
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.22.0'
+      - run: node platform/add-playbook.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}

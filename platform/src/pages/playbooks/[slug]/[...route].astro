@@ -1,0 +1,23 @@
+---
+import Overview from '../../index.astro';
+import Library from '../../library.astro';
+import Paths from '../../paths.astro';
+import Contribute from '../../contribute.astro';
+import Community from '../../community.astro';
+import Resource from '../../resources/[id].astro';
+import { playbooks, resourceKey, resourceUrl } from '../../../data.mjs';
+export function getStaticPaths() {
+  return playbooks.filter(book => !book.legacy).flatMap(book => [
+    ...['overview', 'library', 'paths', 'contribute', 'community'].map(view => ({ params: { slug: book.slug, route: view === 'overview' ? undefined : view }, props: { book, view } })),
+    ...book.resources.flatMap(resource => [{ params: { slug: book.slug, route: `resources/${resourceKey(resource)}` }, props: { book, view: 'resource', resource } }, ...(resource.localAliases ?? []).map(id => ({ params: { slug: book.slug, route: `resources/${resource.playbook === null ? 'shared--' : ''}${id}` }, props: { book, view: 'resource', resource, alias: true } }))]),
+  ]);
+}
+const { view, book, resource, alias } = Astro.props;
+if (alias) return Astro.redirect(resourceUrl(resource, book));
+---
+{view === 'overview' && <Overview book={book} />}
+{view === 'library' && <Library book={book} />}
+{view === 'paths' && <Paths book={book} />}
+{view === 'contribute' && <Contribute book={book} />}
+{view === 'community' && <Community book={book} />}
+{view === 'resource' && <Resource book={book} resource={resource} alias={alias} />}

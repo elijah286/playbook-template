@@ -1,0 +1,19 @@
+---
+import { ArrowRight, ArrowUpRight, Search, Layers, Presentation, FileText } from '@lucide/astro';
+import { config, playbooks, href, bookHref, previewUrl } from '../data.mjs';
+---
+<section class="hub-heading"><p class="eyebrow">CUSTOMER VALUE PLAYBOOKS</p><h1>{config.name}</h1><p>{config.valueThesis}</p><div class="hub-actions"><a class="text-link" href={href('library/')}><Search size={18} />All Resources<ArrowRight size={16} /></a><a class="text-link" href={href('community/')}>Contribute &amp; Ask<ArrowRight size={16} /></a></div></section>
+<section class="content-section playbook-directory"><div class="directory-toolbar"><h2>Playbooks <span>{playbooks.length}</span></h2>{playbooks.length > 0 && <label class="directory-search"><Search size={18} /><span class="sr-only">Find a playbook</span><input type="search" id="playbook-search" placeholder="Find a playbook" autocomplete="off" /></label>}</div><div class="playbook-grid">{playbooks.map(book => {
+  const visual = book.resources.find(resource => resource.featured && previewUrl(resource)) ?? book.resources.find(resource => previewUrl(resource));
+  const recommended = book.resources.filter(resource => resource.featured).slice(0, 2);
+  return <article class="playbook-card" data-playbook-search={`${book.config.name} ${book.config.valueThesis} ${book.config.description ?? ''} ${book.config.overview?.audienceDescription ?? ''}`.toLowerCase()}>{visual && <a class="playbook-cover" href={bookHref(book)} aria-label={book.config.name}><img src={previewUrl(visual)} alt="" width="1440" height="810" loading="lazy" /></a>}<div class="playbook-card-body"><p class="eyebrow">{book.config.featured ? 'RECOMMENDED' : 'PLAYBOOK'}<span class="playbook-resource-count">{book.resources.length} {book.resources.length === 1 ? 'resource' : 'resources'}</span></p><h3><a href={bookHref(book)}>{book.config.name}<ArrowUpRight size={20} /></a></h3><p>{book.config.description || book.config.valueThesis}</p>{book.config.overview?.audienceDescription && <p class="playbook-audience">{book.config.overview.audienceDescription}</p>}{recommended.length > 0 && <ul class="playbook-starts">{recommended.map(resource => <li>{resource.type === 'presentation' ? <Presentation size={15} /> : <FileText size={15} />}<span>{resource.title}</span></li>)}</ul>}<a class="text-link" href={bookHref(book)}>Open Playbook<ArrowRight size={16} /></a></div></article>;
+})}</div><p id="no-playbooks-found" class="muted" hidden>No playbooks match this search.</p>{!playbooks.length && <div class="empty-state"><Layers size={30} /><h3>No Published Playbooks Yet</h3><a class="button" href={href('contribute/')}>Add a Playbook<ArrowRight size={17} /></a></div>}</section>
+<script>
+  const input = document.querySelector<HTMLInputElement>('#playbook-search');
+  input?.addEventListener('input', () => {
+    const query = input.value.trim().toLowerCase();
+    const cards = [...document.querySelectorAll<HTMLElement>('[data-playbook-search]')];
+    cards.forEach(card => { card.hidden = !card.dataset.playbookSearch!.includes(query); });
+    document.getElementById('no-playbooks-found')!.hidden = cards.some(card => !card.hidden);
+  });
+</script>

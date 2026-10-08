@@ -2,7 +2,7 @@
 
 ## Ownership and Confidentiality
 
-The repository owner is responsible for distribution approval, maintenance, invitations, moderation, and platform adoption. Assign a named maintainer in `playbook.json`. One repository is one confidentiality boundary: readers can inspect its contents and history, including drafts. Split NI-only and partner-shareable material when their access differs.
+The repository owner is responsible for distribution approval, maintenance, invitations, moderation, and platform adoption. Assign a hub maintainer in `hub.json` and topic maintainers in each playbook configuration. One repository is one confidentiality boundary: readers can inspect all playbooks, shared resources, and history, including drafts. This hub can include approved partners/customers only when all its content has the same authorized audience. Split NI-only and partner-shareable material when their access differs. CODEOWNERS may enforce editorial review, not reader isolation.
 
 The approved personal demo is an explicit exception: private source, publicly readable website. GitHub Pro supports public Pages from a private personal repository, but does not create access-controlled personal Pages. Personal private collaborators receive write access. This is not the production NI/partner reader model.
 
@@ -12,7 +12,7 @@ An administrator must create or approve an organization-owned private repository
 
 The publisher queries the actual Pages API. Private mode requires `public: false` and an exact origin/base match. Missing Pages yields a **Blocked** summary without public deployment; public Pages in private mode fails the build. No confidential preview or public fallback is created.
 
-After protected hosting is configured, copy its actual `html_url` origin and pathname into `playbook.json`. Test authorized, unauthenticated, unauthorized, pending-invitation, and eligible read-only partner sessions. Inspect response bodies and redirects, not only HTTP status: a 200 login page is not protected content access. Repeat for search JSON, primary binary assets, previews, technical output, and external controlled storage.
+After protected hosting is configured, copy its actual `html_url` origin and pathname into `hub.json` (or the root `playbook.json` for a legacy instance). Test authorized, unauthenticated, unauthorized, pending-invitation, and eligible read-only partner sessions. Inspect response bodies and redirects, not only HTTP status: a 200 login page is not protected content access. Repeat for global/scoped search JSON, primary binary assets, slide previews, supporting source files, technical output, and external controlled storage.
 
 ## Guided Creation
 
@@ -42,7 +42,7 @@ Protect `platform/`, workflow files, package manifests, Astro config, and the br
 
 ## Shared Versions and Rollback
 
-All topics use the same platform files. For **Adopt Shared Platform**, configure a protected `platform-updates` environment and an approved `PLATFORM_UPDATE_TOKEN` with source read plus target contents/PR/Actions permissions. Supply an exact reviewed 40-character source commit. The workflow creates a reviewable PR and explicitly dispatches validation; it cannot replace `playbook.json`, resources, README, or instance docs. Original brand assets use base64 Git Blob transfer without conversion. A recorded lock detects local renderer modifications before overwrite.
+All topics use the same platform files. For **Adopt Shared Platform**, configure a protected `platform-updates` environment and an approved `PLATFORM_UPDATE_TOKEN` with source read plus target contents/PR/Actions permissions. Supply an exact reviewed 40-character source commit. The workflow creates a reviewable PR and explicitly dispatches validation; it cannot replace `hub.json`, playbook configurations, local/shared resources, README, or instance docs. Original brand assets use base64 Git Blob transfer without conversion. A recorded lock detects local renderer modifications before overwrite. Adopting platform files does not automatically move legacy content into a hub; that is an owner-reviewed migration.
 
 Review dependency/workflow changes and run instance checks before merging. To roll back, use a normal revert of the platform adoption commit or merge, preserving later content commits. A content rollback is a separate normal revert. Do not reset or force-push history to recover a deployment. Live adoption/rollback is not certified until tested in an approved instance.
 

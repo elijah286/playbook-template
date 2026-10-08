@@ -1,0 +1,91 @@
+---
+import { ArrowLeft, ArrowRight, ArrowUpRight, Download, X } from '@lucide/astro';
+---
+<dialog id="slide-preview" class="slide-dialog" aria-labelledby="slide-preview-title">
+  <header class="slide-dialog-header"><div><p class="eyebrow">PRESENTATION PREVIEW</p><h2 id="slide-preview-title"></h2></div><button class="icon-button" type="button" data-slide-close aria-label="Close slide preview" title="Close slide preview" autofocus><X size={22} /></button></header>
+  <div class="slide-stage"><img id="slide-preview-image" width="1440" height="810" alt="" hidden /><p id="slide-preview-status" role="status">Loading slide...</p></div>
+  <div class="slide-navigation"><button class="icon-button" type="button" data-slide-previous aria-label="Previous slide" title="Previous slide"><ArrowLeft size={20} /></button><p id="slide-preview-count" role="status" aria-live="polite"></p><button class="icon-button" type="button" data-slide-next aria-label="Next slide" title="Next slide"><ArrowRight size={20} /></button></div>
+  <div id="slide-preview-thumbnails" class="slide-thumbnails" role="group" aria-label="Presentation slides"></div>
+  <footer class="slide-dialog-footer"><a class="text-link" data-slide-details>Resource Details<ArrowUpRight size={16} /></a><a class="button button-small" data-slide-download download><Download size={16} />Download Original</a></footer>
+</dialog>
+<script>
+  type Slide = { image: string; thumbnail: string };
+  const dialog = document.querySelector<HTMLDialogElement>('#slide-preview')!;
+  const title = document.querySelector<HTMLElement>('#slide-preview-title')!;
+  const image = document.querySelector<HTMLImageElement>('#slide-preview-image')!;
+  const status = document.querySelector<HTMLElement>('#slide-preview-status')!;
+  const count = document.querySelector<HTMLElement>('#slide-preview-count')!;
+  const thumbnails = document.querySelector<HTMLElement>('#slide-preview-thumbnails')!;
+  const previous = dialog.querySelector<HTMLButtonElement>('[data-slide-previous]')!;
+  const next = dialog.querySelector<HTMLButtonElement>('[data-slide-next]')!;
+  const download = dialog.querySelector<HTMLAnchorElement>('[data-slide-download]')!;
+  const details = dialog.querySelector<HTMLAnchorElement>('[data-slide-details]')!;
+  let slides: Slide[] = [];
+  let index = 0;
+  let opener: HTMLAnchorElement | null = null;
+  image.addEventListener('load', () => { status.hidden = true; image.hidden = false; });
+  image.addEventListener('error', () => { image.hidden = true; status.hidden = false; status.textContent = 'Slide preview unavailable.'; });
+  function showSlide(position: number) {
+    index = Math.max(0, Math.min(slides.length - 1, position));
+    image.hidden = true;
+    status.textContent = 'Loading slide...';
+    status.hidden = false;
+    image.alt = `${title.textContent}, slide ${index + 1} of ${slides.length}`;
+    image.src = slides[index].image;
+    count.textContent = `${index + 1} / ${slides.length}`;
+    previous.disabled = index === 0;
+    next.disabled = index === slides.length - 1;
+    [...thumbnails.children].forEach((button, position) => {
+      (button as HTMLButtonElement).tabIndex = position === index ? 0 : -1;
+      if (position === index) button.setAttribute('aria-current', 'true');
+      else button.removeAttribute('aria-current');
+    });
+    const selected = thumbnails.children[index] as HTMLElement;
+    if (thumbnails.contains(document.activeElement)) selected.focus({ preventScroll: true });
+    thumbnails.scrollTo({ left: Math.max(0, selected.offsetLeft - thumbnails.offsetLeft - thumbnails.clientWidth / 2 + selected.offsetWidth / 2), behavior: 'instant' });
+  }
+  document.addEventListener('click', event => {
+    const trigger = (event.target as Element).closest<HTMLAnchorElement>('[data-slide-preview]');
+    if (!trigger || event.defaultPrevented || (event as MouseEvent).button !== 0 || (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey || (event as MouseEvent).shiftKey || (event as MouseEvent).altKey) return;
+    const previews: Slide[] = JSON.parse(trigger.dataset.slides ?? '[]');
+    if (!previews.length) return;
+    event.preventDefault();
+    opener = trigger;
+    slides = previews;
+    title.textContent = trigger.dataset.title ?? '';
+    download.href = trigger.dataset.download!;
+    details.href = trigger.href;
+    thumbnails.replaceChildren(...slides.map((slide, position) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.setAttribute('aria-label', `Slide ${position + 1}`);
+      button.title = `Slide ${position + 1}`;
+      const thumbnail = document.createElement('img');
+      thumbnail.src = slide.thumbnail;
+      thumbnail.alt = '';
+      thumbnail.width = 320;
+      thumbnail.height = 180;
+      thumbnail.loading = 'lazy';
+      const number = document.createElement('span');
+      number.textContent = String(position + 1);
+      button.append(thumbnail, number);
+      button.addEventListener('click', () => showSlide(position));
+      return button;
+    }));
+    dialog.showModal();
+    document.documentElement.classList.add('preview-open');
+    showSlide(0);
+  });
+  previous.addEventListener('click', () => showSlide(index - 1));
+  next.addEventListener('click', () => showSlide(index + 1));
+  dialog.querySelector('[data-slide-close]')!.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', event => { if (event.target === dialog) {
+    const bounds = dialog.getBoundingClientRect();
+    if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
+  } });
+  dialog.addEventListener('keydown', event => {
+    const position = { ArrowLeft: index - 1, ArrowRight: index + 1, Home: 0, End: slides.length - 1 }[event.key];
+    if (position !== undefined) { event.preventDefault(); showSlide(position); }
+  });
+  dialog.addEventListener('close', () => { document.documentElement.classList.remove('preview-open'); opener?.focus({ preventScroll: true }); });
+</script>
