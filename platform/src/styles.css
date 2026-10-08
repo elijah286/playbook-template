@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --ink: #172a24;
   --muted: #52635b;
   --green: #008053;
@@ -9,8 +10,37 @@
   --line: #d9e1da;
   --yellow: #d9d976;
   --blue: #dbe9ef;
+  --blue-ink: #24566c;
+  --demo: #f3f2d6;
+  --demo-ink: #66651f;
+  --line-strong: #b8c7bd;
+  --focus: #1c6b9d;
+  --button-background: #008053;
+  --button-hover: #006642;
+  --button-ink: #fff;
   --font: Arial, sans-serif;
   --display: Arial, sans-serif;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #edf2ef;
+  --muted: #b7c2ba;
+  --green: #63d6a7;
+  --green-bright: #83e2bb;
+  --mint: #21382d;
+  --paper: #161918;
+  --wash: #202522;
+  --line: #3d4942;
+  --yellow: #d9d976;
+  --blue: #233b46;
+  --blue-ink: #9ed2e7;
+  --demo: #38381f;
+  --demo-ink: #e0df91;
+  --line-strong: #829389;
+  --focus: #8ac9f0;
+  --button-background: #63d6a7;
+  --button-hover: #8ee5be;
+  --button-ink: #12251c;
 }
 * {
   box-sizing: border-box;
@@ -34,6 +64,11 @@ a {
 button,
 input {
   font: inherit;
+  color: inherit;
+}
+input::placeholder {
+  color: var(--muted);
+  opacity: 1;
 }
 button,
 a,
@@ -45,7 +80,7 @@ a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 summary:focus-visible {
-  outline: 3px solid #1c6b9d;
+  outline: 3px solid var(--focus);
   outline-offset: 4px;
 }
 button {
@@ -106,7 +141,7 @@ img {
   position: fixed;
   top: -80px;
   left: 20px;
-  background: white;
+  background: var(--paper);
   padding: 12px;
   z-index: 30;
 }
@@ -121,7 +156,7 @@ img {
   justify-content: space-between;
   padding: 0 max(32px, calc((100% - 1320px) / 2));
   gap: 28px;
-  background: #fff;
+  background: var(--paper);
 }
 .brand {
   display: flex;
@@ -184,6 +219,13 @@ img {
 .icon-button:hover {
   background: var(--mint);
 }
+.theme-sun,
+[data-theme="dark"] .theme-moon {
+  display: none;
+}
+[data-theme="dark"] .theme-sun {
+  display: block;
+}
 .button {
   display: inline-flex;
   align-items: center;
@@ -191,18 +233,18 @@ img {
   gap: 18px;
   padding: 14px 21px;
   min-height: 48px;
-  background: var(--green);
-  border: 1px solid var(--green);
+  background: var(--button-background);
+  border: 1px solid var(--button-background);
   border-radius: 4px;
-  color: #fff;
+  color: var(--button-ink);
   font-size: 14px;
   font-weight: 600;
   text-align: center;
   line-height: 1.4;
 }
 .button:hover {
-  background: #006642;
-  border-color: #006642;
+  background: var(--button-hover);
+  border-color: var(--button-hover);
 }
 .button-small {
   min-height: 40px;
@@ -215,7 +257,7 @@ img {
   color: var(--green);
 }
 .button-outline:hover {
-  color: #fff;
+  color: var(--button-ink);
 }
 .text-link {
   display: inline-flex;
@@ -264,7 +306,7 @@ img {
 }
 .edition {
   color: var(--muted);
-  border-left: 1px solid #c4cec4;
+  border-left: 1px solid var(--line);
   padding-left: 13px;
 }
 .hero-inner h1 {
@@ -309,13 +351,13 @@ img {
   margin: auto;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  border-top: 1px solid #c8d4ca;
+  border-top: 1px solid var(--line);
   padding: 26px 0 25px;
 }
 .lifecycle-rail a {
   display: grid;
   grid-template-columns: 1fr auto;
-  border-right: 1px solid #d3ddd4;
+  border-right: 1px solid var(--line);
   padding: 0 25px;
   gap: 5px;
 }
@@ -412,7 +454,7 @@ img {
   padding: 25px;
   border: 1px solid var(--line);
   border-radius: 5px;
-  background: white;
+  background: var(--paper);
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -439,11 +481,11 @@ img {
 }
 .type-presentation {
   background: var(--blue);
-  color: #24566c;
+  color: var(--blue-ink);
 }
 .type-demonstration {
-  background: #f3f2d6;
-  color: #66651f;
+  background: var(--demo);
+  color: var(--demo-ink);
 }
 .type-label {
   text-transform: uppercase;
@@ -616,7 +658,7 @@ img {
   font-size: 11px;
 }
 .search-form {
-  border: 1px solid #b8c7bd;
+  border: 1px solid var(--line-strong);
   border-radius: 5px;
   display: flex;
   gap: 12px;
@@ -782,7 +824,7 @@ img {
   text-align: center;
 }
 .presentation-preview > svg {
-  color: #24566c;
+  color: var(--blue-ink);
   margin-bottom: 23px;
 }
 .presentation-preview h2 {
@@ -973,7 +1015,7 @@ img {
     gap: 15px;
     padding: 20px 40px;
     border-bottom: 1px solid var(--line);
-    background: white;
+    background: var(--paper);
   }
   .mobile-nav a {
     padding: 8px;
@@ -1276,7 +1318,7 @@ img {
   color: var(--ink);
 }
 .community-band .button-outline:hover {
-  color: #fff;
+  color: var(--button-ink);
 }
 @media (max-width: 767px) {
   .filter-toggle {

@@ -2,6 +2,12 @@
 
 Every playbook uses the same versioned renderer: navigation, overview, five-stage path, audience paths, curated resources, library, resource details, contribution entry, and community entry. There are no topic-specific page templates, theme generators, or dynamically invented NI illustrations.
 
+## Light and Dark Modes
+
+All pages, including resource details and the 404 page, support light and dark modes. The header's moon/sun button toggles the theme. Pages follow the system color preference until a visitor chooses a theme; that choice is saved in browser storage and shared across pages and tabs. If storage is unavailable, the toggle still works for the current page. The saved theme is applied before rendering to avoid a light flash.
+
+Both palettes are defined by shared CSS variables in `platform/src/styles.css`. Platform maintainers should update the matching light and dark variables together and run `platform/browser-check.mjs` to verify both palettes. Original NI images are unchanged in either mode.
+
 ## Owner-Editable Content
 
 Edit `playbook.json` in GitHub to customize:
